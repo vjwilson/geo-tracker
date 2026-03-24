@@ -2,6 +2,20 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
+
+def decode_country_name(country_name: str) -> str:
+    """Decode URL-encoded country name to proper format"""
+    # Replace hyphens with spaces and title case
+    decoded = country_name.replace("-", " ").title()
+
+    # Fix small words that should be lowercase (and, the, of)
+    decoded = decoded.replace(" And ", " and ")
+    decoded = decoded.replace(" The ", " the ")
+    decoded = decoded.replace(" Of ", " of ")
+
+    return decoded
+
+
 # List of UN-recognized countries (193 member states)
 UN_COUNTRIES = [
     "Afghanistan", "Albania", "Algeria", "Andorra", "Angola",
@@ -46,6 +60,30 @@ UN_COUNTRIES = [
     "Zimbabwe"
 ]
 
+# Lookup table for administrative divisions by country
+ADMINISTRATIVE_DIVISIONS = {
+    "United States": [
+        "Alabama", "Alaska", "American Samoa", "Arizona", "Arkansas",
+        "California", "Colorado", "Connecticut", "Delaware", "District of Columbia",
+        "Florida", "Georgia", "Guam", "Hawaii", "Idaho",
+        "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
+        "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan",
+        "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska",
+        "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York",
+        "North Carolina", "North Dakota", "Northern Mariana Islands", "Ohio", "Oklahoma",
+        "Oregon", "Pennsylvania", "Puerto Rico", "Rhode Island", "South Carolina",
+        "South Dakota", "Tennessee", "Texas", "U.S. Virgin Islands", "Utah",
+        "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin",
+        "Wyoming"
+    ],
+    "Canada": [
+        "Alberta", "British Columbia", "Manitoba", "New Brunswick",
+        "Newfoundland and Labrador", "Northwest Territories", "Nova Scotia",
+        "Nunavut", "Ontario", "Prince Edward Island", "Quebec",
+        "Saskatchewan", "Yukon"
+    ]
+}
+
 
 @app.get("/")
 def root():
@@ -62,19 +100,29 @@ def get_countries():
 @app.get("/countries/{country_name}")
 def get_country(country_name: str):
     """Returns a specific country by URL-encoded name"""
-    # Decode: replace hyphens with spaces and title case
-    decoded_name = country_name.replace("-", " ").title()
-
-    # Fix small words that should be lowercase (and, the, of)
-    decoded_name = decoded_name.replace(" And ", " and ")
-    decoded_name = decoded_name.replace(" The ", " the ")
-    decoded_name = decoded_name.replace(" Of ", " of ")
+    decoded_name = decode_country_name(country_name)
 
     # Search for the country in the list
     if decoded_name in UN_COUNTRIES:
         return decoded_name
     else:
         return "Country Not Found"
+
+
+@app.get("/countries/{country_name}/administrative-divisions")
+def get_administrative_divisions(country_name: str):
+    """Returns administrative divisions for a specific country"""
+    decoded_name = decode_country_name(country_name)
+
+    # Check if country exists in our UN countries list
+    if decoded_name not in UN_COUNTRIES:
+        return "Country Not Found"
+
+    # Check if we have administrative divisions data for this country
+    if decoded_name in ADMINISTRATIVE_DIVISIONS:
+        return ADMINISTRATIVE_DIVISIONS[decoded_name]
+    else:
+        return "Not Implemented Yet"
 
 
 if __name__ == "__main__":
