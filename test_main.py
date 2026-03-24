@@ -50,6 +50,69 @@ def test_countries_endpoint_matches_constant():
     assert response.json() == UN_COUNTRIES
 
 
+def test_get_country_simple():
+    """Test getting a single-word country"""
+    response = client.get("/countries/canada")
+    assert response.status_code == 200
+    assert response.json() == "Canada"
+
+
+def test_get_country_multi_word():
+    """Test getting a multi-word country with hyphens"""
+    response = client.get("/countries/united-states")
+    assert response.status_code == 200
+    assert response.json() == "United States"
+
+
+def test_get_country_complex_name():
+    """Test getting a country with a complex multi-word name"""
+    response = client.get("/countries/new-zealand")
+    assert response.status_code == 200
+    assert response.json() == "New Zealand"
+
+
+def test_get_country_case_insensitive():
+    """Test that country lookup handles different cases"""
+    response = client.get("/countries/UNITED-KINGDOM")
+    assert response.status_code == 200
+    assert response.json() == "United Kingdom"
+
+
+def test_get_country_not_found():
+    """Test that non-existent country returns 'Country Not Found'"""
+    response = client.get("/countries/atlantis")
+    assert response.status_code == 200
+    assert response.json() == "Country Not Found"
+
+
+def test_get_country_not_found_multi_word():
+    """Test that non-existent multi-word country returns 'Country Not Found'"""
+    response = client.get("/countries/made-up-country")
+    assert response.status_code == 200
+    assert response.json() == "Country Not Found"
+
+
+def test_get_country_with_and():
+    """Test getting a country with 'and' in the name"""
+    response = client.get("/countries/antigua-and-barbuda")
+    assert response.status_code == 200
+    assert response.json() == "Antigua and Barbuda"
+
+
+def test_get_country_with_and_and_the():
+    """Test getting a country with both 'and' and 'the' in the name"""
+    response = client.get("/countries/saint-vincent-and-the-grenadines")
+    assert response.status_code == 200
+    assert response.json() == "Saint Vincent and the Grenadines"
+
+
+def test_get_country_with_of():
+    """Test getting a country with 'of' in the name"""
+    response = client.get("/countries/democratic-republic-of-the-congo")
+    assert response.status_code == 200
+    assert response.json() == "Democratic Republic of the Congo"
+
+
 def test_invalid_endpoint():
     """Test that invalid endpoints return 404"""
     response = client.get("/invalid")

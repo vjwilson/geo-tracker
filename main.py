@@ -59,6 +59,24 @@ def get_countries():
     return UN_COUNTRIES
 
 
+@app.get("/countries/{country_name}")
+def get_country(country_name: str):
+    """Returns a specific country by URL-encoded name"""
+    # Decode: replace hyphens with spaces and title case
+    decoded_name = country_name.replace("-", " ").title()
+
+    # Fix small words that should be lowercase (and, the, of)
+    decoded_name = decoded_name.replace(" And ", " and ")
+    decoded_name = decoded_name.replace(" The ", " the ")
+    decoded_name = decoded_name.replace(" Of ", " of ")
+
+    # Search for the country in the list
+    if decoded_name in UN_COUNTRIES:
+        return decoded_name
+    else:
+        return "Country Not Found"
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
