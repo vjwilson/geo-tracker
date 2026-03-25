@@ -1,6 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
-from main import app, UN_COUNTRIES, ADMINISTRATIVE_DIVISIONS
+from app.main import app
+from app.data.countries import UN_COUNTRIES
+from app.data.divisions import ADMINISTRATIVE_DIVISIONS
 
 client = TestClient(app)
 
@@ -79,17 +81,17 @@ def test_get_country_case_insensitive():
 
 
 def test_get_country_not_found():
-    """Test that non-existent country returns 'Country Not Found'"""
+    """Test that non-existent country returns 404"""
     response = client.get("/countries/atlantis")
-    assert response.status_code == 200
-    assert response.json() == "Country Not Found"
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Country not found"
 
 
 def test_get_country_not_found_multi_word():
-    """Test that non-existent multi-word country returns 'Country Not Found'"""
+    """Test that non-existent multi-word country returns 404"""
     response = client.get("/countries/made-up-country")
-    assert response.status_code == 200
-    assert response.json() == "Country Not Found"
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Country not found"
 
 
 def test_get_country_with_and():
@@ -145,10 +147,10 @@ def test_get_administrative_divisions_not_implemented():
 
 
 def test_get_administrative_divisions_country_not_found():
-    """Test that unknown countries return 'Country Not Found'"""
+    """Test that unknown countries return 404"""
     response = client.get("/countries/atlantis/administrative-divisions")
-    assert response.status_code == 200
-    assert response.json() == "Country Not Found"
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Country not found"
 
 
 def test_get_administrative_divisions_matches_lookup_table():
